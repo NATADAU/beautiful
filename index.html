@@ -52,7 +52,6 @@
       z-index: 2;
       animation: rise linear forwards;
     }
-    .balloon svg { display: block; }
     @keyframes rise {
       0%   { transform: translateY(0)      rotate(-4deg); opacity: 0.95; }
       40%  { transform: translateY(-45vh)  rotate(4deg); }
@@ -87,16 +86,42 @@
       text-align: center;
     }
 
-    .star-icon {
-      font-size: 2.6rem;
-      display: inline-block;
-      margin-bottom: 1.6rem;
-      animation: twinkle 4s ease-in-out infinite;
+    /* Круг с персонажем */
+    .avatar-ring {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      margin: 0 auto 1.8rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.14);
     }
-    @keyframes twinkle {
-      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-      30%       { transform: scale(1.12) rotate(8deg); opacity: 0.8; }
-      60%       { transform: scale(0.95) rotate(-4deg); opacity: 1; }
+
+    .avatar-slide {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .avatar-slide.active { opacity: 1; }
+
+    .avatar-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    /* Плейсхолдер если картинка не загрузилась */
+    .avatar-slide .fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
     }
 
     h1 {
@@ -187,7 +212,9 @@
 <button class="music-btn" id="musicBtn" title="Музыка" onclick="toggleMusic()">♪</button>
 
 <div class="wrap">
-  <div class="star-icon">✨</div>
+
+  <!-- Круг с персонажами Муми -->
+  <div class="avatar-ring" id="avatarRing"></div>
 
   <h1>Сейчас трудно.<br>Это правда.</h1>
   <p class="sub">Нажимай, когда нужно что-то тёплое.</p>
@@ -202,6 +229,43 @@
 </div>
 
 <script>
+/* ── Персонажи ── */
+// Положи файлы в папку img/ с этими именами:
+// moomin1.jpg … moomin9.jpg
+// Фоновые цвета — как на стикерах, показываются пока нет картинки
+const characters = [
+  { file: 'img/moomin1.jpg', bg: '#7cc97a', emoji: '🌸' },
+  { file: 'img/moomin2.jpg', bg: '#6db8d6', emoji: '🎩' },
+  { file: 'img/moomin3.jpg', bg: '#f090b0', emoji: '🌺' },
+  { file: 'img/moomin4.jpg', bg: '#7ab8e0', emoji: '⛏️' },
+  { file: 'img/moomin5.jpg', bg: '#5aaa6a', emoji: '😤' },
+  { file: 'img/moomin6.jpg', bg: '#f0d040', emoji: '🎶' },
+  { file: 'img/moomin7.jpg', bg: '#e05050', emoji: '✨' },
+  { file: 'img/moomin8.jpg', bg: '#e87840', emoji: '🌧️' },
+  { file: 'img/moomin9.jpg', bg: '#70b8e0', emoji: '💃' },
+];
+
+const ring = document.getElementById('avatarRing');
+let avatarIdx = 0;
+
+characters.forEach((c, i) => {
+  const slide = document.createElement('div');
+  slide.className = 'avatar-slide' + (i === 0 ? ' active' : '');
+  slide.innerHTML = `
+    <div class="fallback" style="background:${c.bg}">
+      <img src="${c.file}" alt="" onerror="this.parentNode.innerHTML='<div class=fallback style=background:${c.bg};width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.6rem>${c.emoji}</div>'">
+    </div>`;
+  ring.appendChild(slide);
+});
+
+function nextAvatar() {
+  const slides = ring.querySelectorAll('.avatar-slide');
+  slides[avatarIdx].classList.remove('active');
+  avatarIdx = (avatarIdx + 1) % slides.length;
+  slides[avatarIdx].classList.add('active');
+}
+setInterval(nextAvatar, 3000);
+
 /* ── Фразы ── */
 const phrases = [
   "Ты справляешься лучше, чем тебе кажется.",
@@ -232,6 +296,7 @@ function nextPhrase() {
     void card.offsetWidth;
     card.classList.add('fade-in');
     burstConfetti();
+    nextAvatar();
   }, 400);
 }
 
@@ -241,59 +306,45 @@ const ctx = canvas.getContext('2d');
 let particles = [];
 const COLORS = ['#f5cba7','#f7b8c8','#c8dff7','#b8f0c8','#e8c8f7','#ffeaa7'];
 
-function resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 resize();
 window.addEventListener('resize', resize);
 
-function spawnParticle(x, y) {
-  return {
+function spawnBurst(x, y) {
+  for (let i = 0; i < 48; i++) particles.push({
     x, y,
-    vx: (Math.random() - 0.5) * 5,
-    vy: Math.random() * -4 - 2,
+    vx: (Math.random() - 0.5) * 6,
+    vy: Math.random() * -5 - 1,
     size: Math.random() * 7 + 3,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     angle: Math.random() * Math.PI * 2,
     spin: (Math.random() - 0.5) * 0.2,
-    gravity: 0.12,
-    life: 1
-  };
+    gravity: 0.13, life: 1
+  });
 }
 
-function burstConfetti() {
-  const cx = canvas.width / 2, cy = canvas.height * 0.45;
-  for (let i = 0; i < 48; i++) particles.push(spawnParticle(cx, cy));
-}
+function burstConfetti() { spawnBurst(canvas.width / 2, canvas.height * 0.45); }
 
 function idleConfetti() {
-  if (Math.random() < 0.12) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: -10,
-      vx: (Math.random() - 0.5) * 1.2,
-      vy: Math.random() * 1.2 + 0.5,
-      size: Math.random() * 5 + 2,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      angle: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.08,
-      gravity: 0,
-      life: 1
-    });
-  }
+  if (Math.random() < 0.1) particles.push({
+    x: Math.random() * canvas.width, y: -10,
+    vx: (Math.random() - 0.5) * 1,
+    vy: Math.random() * 1 + 0.4,
+    size: Math.random() * 5 + 2,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    angle: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.07,
+    gravity: 0, life: 1
+  });
 }
 
-function animateConfetti() {
+(function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   idleConfetti();
   particles = particles.filter(p => p.life > 0.01);
   for (const p of particles) {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += p.gravity;
-    p.angle += p.spin;
-    p.life -= 0.008;
+    p.x += p.vx; p.y += p.vy; p.vy += p.gravity;
+    p.angle += p.spin; p.life -= 0.007;
     ctx.save();
     ctx.globalAlpha = Math.min(p.life * 2, 0.85);
     ctx.translate(p.x, p.y);
@@ -302,17 +353,13 @@ function animateConfetti() {
     ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
     ctx.restore();
   }
-  requestAnimationFrame(animateConfetti);
-}
-animateConfetti();
+  requestAnimationFrame(loop);
+})();
 
 /* ── Шарики ── */
 const balloonColors = [
-  ['#f7b8c8','#e8a0b0'],
-  ['#f5cba7','#e0b080'],
-  ['#c8dff7','#a0c0e8'],
-  ['#d4f7c8','#a8e0a0'],
-  ['#e8c8f7','#c8a0e0'],
+  ['#f7b8c8','#e8a0b0'],['#f5cba7','#e0b080'],
+  ['#c8dff7','#a0c0e8'],['#d4f7c8','#a8e0a0'],['#e8c8f7','#c8a0e0'],
 ];
 
 function makeBalloon() {
@@ -323,63 +370,65 @@ function makeBalloon() {
   el.style.left = (8 + Math.random() * 84) + 'vw';
   const dur = 7 + Math.random() * 6;
   el.style.animationDuration = dur + 's';
-  el.innerHTML = `
-    <svg width="${size}" height="${size * 1.3}" viewBox="0 0 60 80">
-      <ellipse cx="30" cy="30" rx="28" ry="30" fill="${fill}"/>
-      <ellipse cx="22" cy="18" rx="9" ry="7" fill="${shade}" opacity="0.35"/>
-      <polygon points="27,60 33,60 30,68" fill="${fill}"/>
-      <line x1="30" y1="68" x2="${28 + Math.random()*4}" y2="80" stroke="${shade}" stroke-width="1.5"/>
-    </svg>`;
+  el.innerHTML = `<svg width="${size}" height="${size*1.3}" viewBox="0 0 60 80">
+    <ellipse cx="30" cy="30" rx="28" ry="30" fill="${fill}"/>
+    <ellipse cx="22" cy="18" rx="9" ry="7" fill="${shade}" opacity="0.35"/>
+    <polygon points="27,60 33,60 30,68" fill="${fill}"/>
+    <line x1="30" y1="68" x2="${28+Math.random()*4}" y2="80" stroke="${shade}" stroke-width="1.5"/>
+  </svg>`;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), dur * 1000 + 200);
 }
 
-function launchBalloons(count) {
-  let i = 0;
-  const iv = setInterval(() => {
-    makeBalloon();
-    if (++i >= count) clearInterval(iv);
-  }, 380);
-}
+setTimeout(() => { for(let i=0;i<6;i++) setTimeout(makeBalloon, i*380); }, 6000);
+setInterval(() => { if(Math.random()<0.5) makeBalloon(); }, 8000);
 
-// Первая волна шариков через 6 секунд
-setTimeout(() => launchBalloons(6), 6000);
-// И потом изредка
-setInterval(() => { if (Math.random() < 0.5) makeBalloon(); }, 8000);
-
-/* ── Музыка (Web Audio API) ── */
+/* ── Музыка — игривая, как музыкальная шкатулка ── */
 let audioCtx = null, playing = false, noteTimeout = null;
 
-const melody = [
-  523.25, 440.00, 392.00, 329.63,  // C5 A4 G4 E4
-  261.63, 329.63, 392.00, 440.00,  // C4 E4 G4 A4
-  523.25, 587.33, 523.25, 440.00,  // C5 D5 C5 A4
-  392.00, 329.63, 261.63, 0,       // G4 E4 C4 pause
+// Тема в духе Муми: весёлая, нежная, с прыжками
+const tune = [
+  // freq,  длительность (сек)
+  [659.25, 0.18], [587.33, 0.18], [523.25, 0.18], [587.33, 0.18],
+  [659.25, 0.35], [659.25, 0.35], [659.25, 0.35],
+  [587.33, 0.18], [587.33, 0.18], [587.33, 0.35],
+  [659.25, 0.18], [783.99, 0.18], [783.99, 0.35],
+  [659.25, 0.18], [587.33, 0.18], [523.25, 0.18], [587.33, 0.18],
+  [659.25, 0.35], [659.25, 0.18], [659.25, 0.18],
+  [587.33, 0.18], [587.33, 0.18], [659.25, 0.18], [587.33, 0.18],
+  [523.25, 0.55], [0,      0.25],
 ];
-let noteIdx = 0;
+let tuneIdx = 0;
 
 function playNote(freq, when, dur) {
-  if (!audioCtx || !playing) return;
-  if (freq === 0) return;
+  if (!audioCtx || !playing || freq === 0) return;
   const osc  = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.type = 'sine';
+  // Лёгкий хор: второй осциллятор чуть выше
+  const osc2  = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc.type = 'triangle';
   osc.frequency.value = freq;
+  osc2.type = 'sine';
+  osc2.frequency.value = freq * 2;
   gain.gain.setValueAtTime(0, when);
-  gain.gain.linearRampToValueAtTime(0.10, when + 0.06);
-  gain.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.95);
-  osc.start(when);
-  osc.stop(when + dur);
+  gain.gain.linearRampToValueAtTime(0.11, when + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.9);
+  gain2.gain.setValueAtTime(0, when);
+  gain2.gain.linearRampToValueAtTime(0.04, when + 0.04);
+  gain2.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.7);
+  osc.connect(gain);  gain.connect(audioCtx.destination);
+  osc2.connect(gain2); gain2.connect(audioCtx.destination);
+  osc.start(when);  osc.stop(when + dur);
+  osc2.start(when); osc2.stop(when + dur);
 }
 
-function scheduleMelody() {
+function scheduleTune() {
   if (!playing) return;
-  const noteDur = 0.55;
-  playNote(melody[noteIdx], audioCtx.currentTime, noteDur);
-  noteIdx = (noteIdx + 1) % melody.length;
-  noteTimeout = setTimeout(scheduleMelody, noteDur * 1000);
+  const [freq, dur] = tune[tuneIdx];
+  playNote(freq, audioCtx.currentTime, dur);
+  tuneIdx = (tuneIdx + 1) % tune.length;
+  noteTimeout = setTimeout(scheduleTune, dur * 1000);
 }
 
 function toggleMusic() {
@@ -389,7 +438,7 @@ function toggleMusic() {
     playing = true;
     btn.textContent = '♫';
     btn.classList.add('playing');
-    scheduleMelody();
+    scheduleTune();
   } else {
     playing = false;
     clearTimeout(noteTimeout);
