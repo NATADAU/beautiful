@@ -3,329 +3,207 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Beautiful — легко, светло, весело</title>
+  <title>Ты не один</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --sun: #FFD93D;
-      --sky: #6BCFFF;
-      --grass: #6BCB77;
-      --coral: #FF6B6B;
-      --lavender: #C77DFF;
-      --white: #FFFEF7;
-    }
-
-    html { scroll-behavior: smooth; }
-
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--white);
-      color: #2d2d2d;
-      overflow-x: hidden;
-    }
-
-    /* ── Hero ── */
-    .hero {
+      font-family: 'Georgia', serif;
       min-height: 100vh;
-      background: linear-gradient(160deg, #e0f7ff 0%, #fff9e6 50%, #ffeef8 100%);
+      background: #fdf6f0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
       padding: 2rem;
-      position: relative;
       overflow: hidden;
+      position: relative;
     }
 
-    /* floating blobs */
-    .blob {
-      position: absolute;
+    /* Тихий фоновый свет */
+    .glow {
+      position: fixed;
       border-radius: 50%;
-      filter: blur(60px);
-      opacity: 0.35;
-      animation: float 8s ease-in-out infinite;
+      filter: blur(90px);
+      opacity: 0.22;
+      pointer-events: none;
     }
-    .blob-1 { width: 420px; height: 420px; background: var(--sun);   top: -120px; left: -100px; animation-delay: 0s; }
-    .blob-2 { width: 360px; height: 360px; background: var(--sky);   bottom: -80px; right: -80px; animation-delay: 2s; }
-    .blob-3 { width: 280px; height: 280px; background: var(--lavender); top: 40%; left: 60%; animation-delay: 4s; }
+    .glow-1 { width: 500px; height: 500px; background: #f7c9a8; top: -150px; left: -150px; animation: drift 14s ease-in-out infinite; }
+    .glow-2 { width: 400px; height: 400px; background: #c8dff7; bottom: -100px; right: -100px; animation: drift 18s ease-in-out infinite reverse; }
+    .glow-3 { width: 300px; height: 300px; background: #f7c8d4; top: 40%; left: 30%; animation: drift 20s ease-in-out infinite 4s; }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50%       { transform: translateY(-30px) scale(1.05); }
-    }
-
-    .hero-emoji {
-      font-size: 5rem;
-      animation: spin 6s linear infinite;
-      display: inline-block;
-      margin-bottom: 1rem;
-    }
-    @keyframes spin {
-      0%   { transform: rotate(0deg) scale(1); }
-      50%  { transform: rotate(180deg) scale(1.1); }
-      100% { transform: rotate(360deg) scale(1); }
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(20px, -25px); }
     }
 
-    .hero h1 {
-      font-size: clamp(2.5rem, 7vw, 5rem);
-      font-weight: 900;
-      line-height: 1.1;
-      letter-spacing: -2px;
-      background: linear-gradient(135deg, #FF6B6B, #FFD93D, #6BCB77, #6BCFFF, #C77DFF);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      background-size: 300%;
-      animation: gradient-shift 4s ease infinite;
+    /* Контент */
+    .wrap {
       position: relative;
-    }
-    @keyframes gradient-shift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .hero p {
-      margin-top: 1.2rem;
-      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-      color: #555;
-      max-width: 520px;
-      position: relative;
-    }
-
-    .cta {
-      margin-top: 2.4rem;
-      display: inline-block;
-      padding: 1rem 2.8rem;
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--coral), var(--sun));
-      color: #fff;
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-decoration: none;
-      position: relative;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 8px 30px rgba(255,107,107,0.4);
-    }
-    .cta:hover {
-      transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 16px 40px rgba(255,107,107,0.5);
-    }
-
-    /* ── Features ── */
-    .features {
-      padding: 6rem 2rem;
-      background: var(--white);
+      max-width: 560px;
+      width: 100%;
       text-align: center;
     }
 
-    .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 800;
-      margin-bottom: 3.5rem;
-      color: #2d2d2d;
+    .candle {
+      font-size: 2.8rem;
+      display: inline-block;
+      animation: flicker 3s ease-in-out infinite;
+      margin-bottom: 1.8rem;
+    }
+    @keyframes flicker {
+      0%, 100% { transform: scale(1) rotate(-1deg); opacity: 1; }
+      50%       { transform: scale(1.06) rotate(1deg); opacity: 0.88; }
     }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: normal;
+      color: #5a4a42;
+      line-height: 1.5;
+      margin-bottom: 0.8rem;
     }
 
-    .card {
-      background: #fff;
+    .sub {
+      font-size: 1rem;
+      color: #a08c82;
+      margin-bottom: 3rem;
+      line-height: 1.7;
+    }
+
+    /* Карточка с фразой */
+    .phrase-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
       border-radius: 24px;
-      padding: 2.5rem 2rem;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.07);
-      transition: transform 0.25s, box-shadow 0.25s;
-      cursor: default;
-    }
-    .card:hover {
-      transform: translateY(-8px) rotate(-1deg);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
-    }
-    .card-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
-    .card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.6rem; }
-    .card p  { color: #777; line-height: 1.6; }
-
-    .card-1 { border-top: 5px solid var(--sun); }
-    .card-2 { border-top: 5px solid var(--sky); }
-    .card-3 { border-top: 5px solid var(--grass); }
-
-    /* ── Marquee ── */
-    .marquee-wrap {
-      background: linear-gradient(90deg, var(--coral), var(--lavender), var(--sky), var(--grass), var(--sun));
-      background-size: 300%;
-      animation: gradient-shift 6s ease infinite;
-      padding: 1.2rem 0;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    .marquee-track {
-      display: inline-block;
-      animation: marquee 18s linear infinite;
-    }
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-    .marquee-item {
-      display: inline-block;
-      margin: 0 2rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.5px;
-    }
-
-    /* ── Stats ── */
-    .stats {
-      padding: 6rem 2rem;
-      background: linear-gradient(135deg, #f0faff, #fff9f0);
-      text-align: center;
-    }
-    .stats-grid {
+      padding: 2.4rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 40px rgba(180, 140, 120, 0.12);
+      min-height: 130px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
+      align-items: center;
       justify-content: center;
-      max-width: 800px;
-      margin: 0 auto;
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
-    .stat {
-      flex: 1 1 160px;
-      background: #fff;
-      border-radius: 20px;
-      padding: 2rem 1.5rem;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-    }
-    .stat-num {
-      font-size: 3rem;
-      font-weight: 900;
-      line-height: 1;
-      background: linear-gradient(135deg, var(--coral), var(--lavender));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .stat-label { margin-top: 0.5rem; color: #888; font-size: 0.95rem; }
 
-    /* ── CTA band ── */
-    .cta-band {
-      padding: 6rem 2rem;
-      text-align: center;
-      background: linear-gradient(160deg, #fff0f0, #f0fff4, #f0f8ff);
+    .phrase-text {
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      color: #5a4a42;
+      line-height: 1.7;
+      font-style: italic;
     }
-    .cta-band h2 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 900;
-      margin-bottom: 1.5rem;
-    }
-    .cta-band .cta { font-size: 1.15rem; }
 
-    /* ── Footer ── */
-    footer {
-      background: #2d2d2d;
-      color: #aaa;
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
+    .phrase-card.fade-out {
+      opacity: 0;
+      transform: translateY(-8px);
     }
-    footer span { color: var(--sun); }
+    .phrase-card.fade-in {
+      animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Кнопка */
+    .btn {
+      display: inline-block;
+      padding: 0.9rem 2.4rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #f5cba7, #f7b8c8);
+      color: #5a3a30;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 4px 20px rgba(245, 180, 150, 0.35);
+      letter-spacing: 0.3px;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(245, 180, 150, 0.5);
+    }
+    .btn:active { transform: scale(0.97); }
+
+    /* Счётчик */
+    .counter {
+      margin-top: 1.4rem;
+      font-size: 0.85rem;
+      color: #c4a898;
+      letter-spacing: 1px;
+    }
+
+    .heart {
+      display: inline-block;
+      animation: heartbeat 2.4s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      30%       { transform: scale(1.18); }
+      60%       { transform: scale(1.06); }
+    }
   </style>
 </head>
 <body>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
 
-  <div class="hero-emoji">☀️</div>
-  <h1>Легко.<br>Светло.<br>Весело.</h1>
-  <p>Место, где каждый день становится чуть ярче — без лишних усилий и тяжёлых мыслей.</p>
-  <a href="#features" class="cta">Начать прямо сейчас</a>
-</section>
+<div class="wrap">
+  <div class="candle">🕯️</div>
 
-<!-- MARQUEE -->
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <span class="marquee-item">🌸 Радость</span>
-    <span class="marquee-item">✨ Лёгкость</span>
-    <span class="marquee-item">🌈 Цвет</span>
-    <span class="marquee-item">🎉 Праздник</span>
-    <span class="marquee-item">💛 Тепло</span>
-    <span class="marquee-item">🌊 Свобода</span>
-    <span class="marquee-item">🦋 Красота</span>
-    <span class="marquee-item">🎵 Музыка</span>
-    <!-- duplicate for seamless loop -->
-    <span class="marquee-item">🌸 Радость</span>
-    <span class="marquee-item">✨ Лёгкость</span>
-    <span class="marquee-item">🌈 Цвет</span>
-    <span class="marquee-item">🎉 Праздник</span>
-    <span class="marquee-item">💛 Тепло</span>
-    <span class="marquee-item">🌊 Свобода</span>
-    <span class="marquee-item">🦋 Красота</span>
-    <span class="marquee-item">🎵 Музыка</span>
+  <h1>Сейчас трудно.<br>Это правда.</h1>
+  <p class="sub">Нажимай, когда нужно что-то тёплое.</p>
+
+  <div class="phrase-card fade-in" id="card">
+    <p class="phrase-text" id="phrase">Ты справляешься лучше, чем тебе кажется.</p>
   </div>
+
+  <button class="btn" id="btn" onclick="nextPhrase()">Ещё одно слово для тебя</button>
+
+  <p class="counter"><span class="heart">♡</span> <span id="count">1</span> / 12</p>
 </div>
 
-<!-- FEATURES -->
-<section class="features" id="features">
-  <h2 class="section-title">Три простых принципа</h2>
-  <div class="cards">
-    <div class="card card-1">
-      <span class="card-icon">🌤️</span>
-      <h3>Легко</h3>
-      <p>Никаких сложных шагов. Просто открой — и всё уже работает так, как надо.</p>
-    </div>
-    <div class="card card-2">
-      <span class="card-icon">💡</span>
-      <h3>Светло</h3>
-      <p>Чистый дизайн, пространство для мыслей и никакого лишнего шума вокруг.</p>
-    </div>
-    <div class="card card-3">
-      <span class="card-icon">🎊</span>
-      <h3>Весело</h3>
-      <p>Каждое взаимодействие приносит улыбку — потому что именно так и должно быть.</p>
-    </div>
-  </div>
-</section>
+<script>
+  const phrases = [
+    "Ты справляешься лучше, чем тебе кажется.",
+    "Можно просто дышать. Этого уже достаточно.",
+    "Твои чувства настоящие — и ты имеешь право их чувствовать.",
+    "Ты не один, даже если сейчас так ощущается.",
+    "После самой тёмной ночи всё равно приходит утро.",
+    "Маленький шаг вперёд — это всё равно шаг.",
+    "Тебе не нужно быть сильным прямо сейчас. Можно просто быть.",
+    "Ты важен. Не за что-то — просто так.",
+    "Всё это временно. А ты — нет.",
+    "Разрешено отдыхать. Разрешено не знать ответов.",
+    "Кто-то думает о тебе тепло прямо в эту минуту.",
+    "Ты дошёл до сегодня. Это что-то значит."
+  ];
 
-<!-- STATS -->
-<section class="stats">
-  <h2 class="section-title">Цифры говорят сами за себя</h2>
-  <div class="stats-grid">
-    <div class="stat">
-      <div class="stat-num">12K+</div>
-      <div class="stat-label">счастливых пользователей</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">98%</div>
-      <div class="stat-label">улыбнулись первый день</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">∞</div>
-      <div class="stat-label">поводов для радости</div>
-    </div>
-  </div>
-</section>
+  let current = 0;
 
-<!-- CTA BAND -->
-<section class="cta-band">
-  <h2>Готов попробовать?<br>Это бесплатно 🎁</h2>
-  <a href="#" class="cta">Присоединиться</a>
-</section>
+  function nextPhrase() {
+    const card = document.getElementById('card');
+    const phraseEl = document.getElementById('phrase');
+    const countEl = document.getElementById('count');
 
-<!-- FOOTER -->
-<footer>
-  <p>Сделано с <span>♥</span> и большим количеством солнца · 2026</p>
-</footer>
+    card.classList.remove('fade-in');
+    card.classList.add('fade-out');
+
+    setTimeout(() => {
+      current = (current + 1) % phrases.length;
+      phraseEl.textContent = phrases[current];
+      countEl.textContent = current + 1;
+
+      card.classList.remove('fade-out');
+      card.classList.add('fade-in');
+
+      void card.offsetWidth; // reflow
+    }, 400);
+  }
+</script>
 
 </body>
 </html>
