@@ -44,19 +44,11 @@
       50%       { transform: translate(20px, -25px); }
     }
 
-    /* Воздушные шарики */
-    .balloon {
+    #balloons {
       position: fixed;
-      bottom: -140px;
+      inset: 0;
       pointer-events: none;
-      z-index: 2;
-      animation: rise linear forwards;
-    }
-    @keyframes rise {
-      0%   { transform: translateY(0)      rotate(-4deg); opacity: 0.92; }
-      30%  { transform: translateY(-35vh)  rotate(5deg); }
-      65%  { transform: translateY(-75vh)  rotate(-4deg); opacity: 0.75; }
-      100% { transform: translateY(-115vh) rotate(3deg);  opacity: 0; }
+      z-index: 1;
     }
 
     /* Кнопка музыки */
@@ -214,6 +206,7 @@
 </head>
 <body>
 
+<canvas id="balloons"></canvas>
 <canvas id="confetti"></canvas>
 
 <div class="glow glow-1"></div>
@@ -367,37 +360,95 @@ function idleConfetti() {
   requestAnimationFrame(loop);
 })();
 
-/* ── Шарики ── */
-const balloonColors = [
-  ['#f7b8c8','#e8a0b0'],['#f5cba7','#e0b080'],
-  ['#c8dff7','#a0c0e8'],['#d4f7c8','#a8e0a0'],['#e8c8f7','#c8a0e0'],
-];
+/* ── Шарики на canvas (плавно, 60fps) ── */
+const bc    = document.getElementById('balloons');
+const bctx  = bc.getContext('2d');
 
-function makeBalloon() {
-  const [fill, shade] = balloonColors[Math.floor(Math.random() * balloonColors.length)];
-  const size = 32 + Math.random() * 40;
-  const el = document.createElement('div');
-  el.className = 'balloon';
-  el.style.left = (8 + Math.random() * 84) + 'vw';
-  const dur = 7 + Math.random() * 6;
-  el.style.animationDuration = dur + 's';
-  el.innerHTML = `<svg width="${size}" height="${size*1.3}" viewBox="0 0 60 80">
-    <ellipse cx="30" cy="30" rx="28" ry="30" fill="${fill}"/>
-    <ellipse cx="22" cy="18" rx="9" ry="7" fill="${shade}" opacity="0.35"/>
-    <polygon points="27,60 33,60 30,68" fill="${fill}"/>
-    <line x1="30" y1="68" x2="${28+Math.random()*4}" y2="80" stroke="${shade}" stroke-width="1.5"/>
-  </svg>`;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), dur * 1000 + 200);
+function resizeB() { bc.width = window.innerWidth; bc.height = window.innerHeight; }
+resizeB();
+window.addEventListener('resize', resizeB);
+
+const bPalette = ['#f7b8c8','#f5cba7','#c8dff7','#d4f7c8','#e8c8f7','#ffd6e0','#ffe8b0'];
+const balloonList = [];
+
+function spawnBalloon() {
+  const color = bPalette[Math.floor(Math.random() * bPalette.length)];
+  balloonList.push({
+    x:     40 + Math.random() * (bc.width - 80),
+    y:     bc.height + 120,
+    vy:    0.7 + Math.random() * 0.8,
+    r:     42 + Math.random() * 38,        // крупные
+    color,
+    phase: Math.random() * Math.PI * 2,
+    swayA: 18 + Math.random() * 28,       // амплитуда покачивания
+    swayS: 0.012 + Math.random() * 0.014, // скорость покачивания
+    t: 0,
+  });
 }
 
-// Стартовая волна — много сразу
-setTimeout(() => {
-  for (let i = 0; i < 18; i++) setTimeout(makeBalloon, i * 220);
-}, 800);
+function drawBalloon(b) {
+  const dx = Math.sin(b.phase + b.t * b.swayS) * b.swayA;
+  const x  = b.x + dx;
+  const y  = b.y;
+  const r  = b.r;
 
-// Потом постоянный поток
-setInterval(makeBalloon, 900);
+  // прозрачность при появлении снизу и исчезании наверху
+  const fadeIn  = Math.min(1, (bc.height - y + 120) / 80);
+  const fadeOut = Math.min(1, (y + 60) / 60);
+  bctx.globalAlpha = Math.max(0, Math.min(fadeIn, fadeOut) * 0.88);
+
+  // тело шарика
+  bctx.beginPath();
+  bctx.ellipse(x, y, r * 0.72, r, 0, 0, Math.PI * 2);
+  bctx.fillStyle = b.color;
+  bctx.fill();
+
+  // блик
+  bctx.beginPath();
+  bctx.ellipse(x - r * 0.22, y - r * 0.28, r * 0.22, r * 0.16, -0.4, 0, Math.PI * 2);
+  bctx.fillStyle = 'rgba(255,255,255,0.5)';
+  bctx.fill();
+
+  // узелок
+  bctx.beginPath();
+  bctx.ellipse(x, y + r + 3, r * 0.1, r * 0.08, 0, 0, Math.PI * 2);
+  bctx.fillStyle = b.color;
+  bctx.fill();
+
+  // тонкая нитка — кривая Безье
+  const kx  = x;
+  const ky  = y + r + 6;
+  const cp1 = { x: kx + Math.sin(b.phase + 1) * 12, y: ky + r * 0.9 };
+  const cp2 = { x: kx - Math.sin(b.phase + 2) * 12, y: ky + r * 1.8 };
+  const ex  = kx + Math.sin(b.phase) * 8;
+  const ey  = ky + r * 2.6;
+  bctx.beginPath();
+  bctx.moveTo(kx, ky);
+  bctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, ex, ey);
+  bctx.strokeStyle = 'rgba(140,100,80,0.35)';
+  bctx.lineWidth = 0.9;
+  bctx.stroke();
+}
+
+(function balloonLoop() {
+  bctx.clearRect(0, 0, bc.width, bc.height);
+  for (let i = balloonList.length - 1; i >= 0; i--) {
+    const b = balloonList[i];
+    b.y -= b.vy;
+    b.t++;
+    if (b.y < -200) { balloonList.splice(i, 1); continue; }
+    drawBalloon(b);
+  }
+  bctx.globalAlpha = 1;
+  requestAnimationFrame(balloonLoop);
+})();
+
+// Первая волна
+setTimeout(() => {
+  for (let i = 0; i < 20; i++) setTimeout(spawnBalloon, i * 180);
+}, 600);
+// Непрерывный поток
+setInterval(spawnBalloon, 850);
 
 /* ── Музыка — игривая, как музыкальная шкатулка ── */
 let audioCtx = null, playing = false, noteTimeout = null;
